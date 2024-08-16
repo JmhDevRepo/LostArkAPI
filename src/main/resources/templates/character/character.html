@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/basic.html}">
+<head>
+    <link rel="stylesheet" th:href="@{/css/character.css}">
+    <title>LostArkAPI</title>
+</head>
+
+<div layout:fragment="backgroundImage">
+
+</div>
+<div layout:fragment="content">
+    <div class="container">
+        <div class="d-flex justify-content-center align-items-center text-white">
+            <div class="profile align-items-center card bg-dark col-7 text-white mx-auto my-5" style="height: 600px">
+
+
+            </div>
+            <div class="characterStat align-items-center card bg-dark col-4 text-white mx-auto" style="height: 600px">
+
+            </div>
+        </div>
+        <div class="d-flex justify-content-center text-white mb-5">
+            <div class="equipment bg-dark col-5 text-white mx-auto my-2 rounded" style="height: 650px">
+                <div class="bg-dark h-100 d-flex flex-column justify-content-around rounded">
+                    <p class="무기 ellipsis"></p>
+                    <p class="투구 ellipsis"></p>
+                    <p class="상의 ellipsis"></p>
+                    <p class="하의 ellipsis"></p>
+                    <p class="장갑 ellipsis"></p>
+                    <p class="어깨 ellipsis"></p>
+                </div>
+            </div>
+            <div class="accessory bg-dark col-5 text-white mx-auto my-2 rounded" style="height: 650px">
+                <div class="bg-dark h-100 d-flex flex-column justify-content-around rounded">
+                    <p class="목걸이 ellipsis"></p>
+                    <p class="귀걸이1 ellipsis"></p>
+                    <p class="귀걸이2 ellipsis"></p>
+                    <p class="반지1 ellipsis"></p>
+                    <p class="반지2 ellipsis"></p>
+                    <p class="어빌리티스톤 ellipsis"></p>
+                    <p class="팔찌 ellipsis"></p>
+                </div>
+            </div>
+            <div class="gems card justify-content-center align-items-center bg-dark col-1 text-white mx-auto my-2" style="height: 650px">
+
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script th:src="@{/js/Character.js}"></script>
+</div>
+
+<script layout:fragment="script" th:inline="javascript">
+    let characterName = new URL(location.href).pathname.substring(11);
+    let profileDiv = document.querySelector('.profile');
+    let characterStatDiv = document.querySelector('.characterStat');
+    let gemsDiv = document.querySelector('.gems');
+
+    function printProfile(data){
+        let profileStr = '';
+
+        tempTitle = data.ArmoryProfile.Title;
+        tempTownName = data.ArmoryProfile.TownName;
+        tempGuildName = data.ArmoryProfile.GuildName;
+        if (tempTitle === null) {
+            tempTitle = "없 음";
+        }
+        if (tempTownName === null) {
+            tempTownName = "없 음";
+        }
+        if (tempGuildName === null) {
+            tempGuildName = "없 음"
+        }
+        profileStr += `<div class="card-body col d-flex justify-content-between align-items-center">
+                                <div class="w-50">
+                                    <p class="ellipsis"><strong>서 버 : </strong>${data.ArmoryProfile.ServerName}</p>
+                                    <p class="ellipsis"><strong>길 드 : </strong>${tempGuildName}</p>
+                                    <p class="ellipsis"><strong>클래스 : </strong>${data.ArmoryProfile.CharacterClassName}</p>
+                                    <p class="ellipsis"><strong>칭 호 : </strong>${tempTitle}</p>
+                                    <p class="ellipsis"><strong>전 투 : </strong>${data.ArmoryProfile.CharacterLevel}</p>
+                                    <p class="ellipsis"><strong>아이템 : </strong>${data.ArmoryProfile.ItemMaxLevel}</p>
+                                    <p class="ellipsis"><strong>원정대 : </strong>${data.ArmoryProfile.ExpeditionLevel}</p>
+                                    <p class="ellipsis"><strong>P V P : </strong>${data.ArmoryProfile.PvpGradeName}</p>
+                                    <p class="ellipsis"><strong>영 지 : </strong>${tempTownName}</p>
+                                    <p class="나침반 ellipsis mt-4"></p>
+                                    <p class="부적 ellipsis"></p>
+                                </div>`
+        profileStr += `<div class="w-50">
+                                    <img src="${data.ArmoryProfile.CharacterImage}" class="img img-fluid border rounded-3" alt="사진정보 없음">
+                                    <div class="text-center my-3">`
+        for (tendency of data.ArmoryProfile.Tendencies) {
+            profileStr += `<p class="ellipsis"><strong>${tendency.Type} : </strong>${tendency.Point} / ${tendency.MaxPoint}</p>`
+        }
+        profileStr += `</div>`
+
+        profileDiv.innerHTML += profileStr;
+    }
+    function printCharacterStat(data){
+        let characterStatStr = '';
+        let characterStat = data.ArmoryProfile.Stats;
+
+        characterStatStr += `<div class="d-flex w-100 justify-content-center border-bottom">`
+        characterStatStr += `<div class="w-50 text-center py-3 border-end">`
+
+        for (let i = 0; i < 3; i++) {
+            characterStatStr += `<p>${characterStat[i].Type} : ${characterStat[i].Value}</p>`
+        }
+
+        characterStatStr += `</div>`
+        characterStatStr += `<div class="w-50 text-center py-3">`
+
+        for (let i = 3; i < 6; i++) {
+            characterStatStr += `<p>${characterStat[i].Type} : ${characterStat[i].Value}</p>`
+        }
+
+        characterStatStr += `</div>`
+        characterStatStr += `</div>`
+
+        characterStatStr += `<div class="mt-3 text-center w-100 border-bottom">`
+        for (let i = 6; i < 8; i++) {
+            characterStatStr += `<p>${characterStat[i].Type} : ${characterStat[i].Value}</p>`
+        }
+        characterStatStr += `</div>`
+
+        characterStatDiv.innerHTML += characterStatStr;
+    }
+    function printPassive(data) {
+        let characterStatStr = '<div class="d-flex flex-column h-100">';
+
+        if (data.ArmoryEngraving === null) {
+            characterStatStr += `<div class="d-flex justify-content-between mx-2 my-auto align-items-center">
+                                    <p>각인 없음</p>
+                                 </div>`
+        } else if (data.ArmoryEngraving.ArkPassiveEffects === null) {
+            for (effect of data.ArmoryEngraving.Effects) {
+                characterStatStr += `<div class="d-flex my-auto w-100">
+                                        <img src="${effect.Icon}" class="img-fluid rounded-circle me-3" style="width: 40px; height: 40px"><p class="ellipsis d-inline-flex align-items-center m-0">${effect.Name}</p>
+                                     </div>`
+            }
+        } else {
+            for (arkpassiveEffect of data.ArmoryEngraving.ArkPassiveEffects) {
+                characterStatStr += `<div class="d-flex my-auto w-100">
+                                        <img src="https://loawa.com/assets/images/icons/engrave4.png" class="me-3"><p class="ellipsis d-inline-flex align-items-center m-0" style="margin: 0">${arkpassiveEffect.Name}</p>
+                                     </div>`
+            }
+        }
+        characterStatStr += `</div>`
+        characterStatDiv.innerHTML += characterStatStr;
+    }
+    function switchArmoryGrade(armoryEquipment) {
+
+        switch (armoryEquipment.Grade) {
+            case "에스더":
+                return `<span class="badge mx-3" style="width:60px; background: lightseagreen; color: black">${armoryEquipment.Grade}</span><img src="${armoryEquipment.Icon}" class="border rounded mx-3" style="width: 50px; height: 50px">${armoryEquipment.Name}`
+            case "고대":
+                return `<span class="badge mx-3" style="width:60px; background: beige; color: black">${armoryEquipment.Grade}</span><img src="${armoryEquipment.Icon}" class="border rounded mx-3" style="width: 50px; height: 50px">${armoryEquipment.Name}`
+            case "유물":
+                return `<span class="badge mx-3" style="width:60px; background: darkorange; color: white">${armoryEquipment.Grade}</span><img src="${armoryEquipment.Icon}" class="border rounded mx-3" style="width: 50px; height: 50px">${armoryEquipment.Name}`
+            case "전설":
+                return `<span class="badge mx-3" style="width:60px; background: #ffff7c; color: black">${armoryEquipment.Grade}</span><img src="${armoryEquipment.Icon}" class="border rounded mx-3" style="width: 50px; height: 50px">${armoryEquipment.Name}`
+            case "영웅":
+                return `<span class="badge mx-3" style="width:60px; background: rebeccapurple; color: white">${armoryEquipment.Grade}</span><img src="${armoryEquipment.Icon}" class="border rounded mx-3" style="width: 50px; height: 50px">${armoryEquipment.Name}`
+            case "희귀":
+                return `<span class="badge mx-3" style="width:60px; background: deepskyblue; color: black">${armoryEquipment.Grade}</span><img src="${armoryEquipment.Icon}" class="border rounded mx-3" style="width: 50px; height: 50px">${armoryEquipment.Name}`
+            case "고급":
+                return `<span class="badge mx-3" style="width:60px; background: darkgreen; color: white">${armoryEquipment.Grade}</span><img src="${armoryEquipment.Icon}" class="border rounded mx-3" style="width: 50px; height: 50px">${armoryEquipment.Name}`
+            case "일반":
+                return `<span class="badge mx-3" style="width:60px; background: gray; color: white">${armoryEquipment.Grade}</span><img src="${armoryEquipment.Icon}" class="border rounded mx-3" style="width: 50px; height: 50px">${armoryEquipment.Name}`
+        }
+    }
+    function printEquipment(data){
+        let equipmentType = ["무기", "투구", "상의", "하의", "장갑", "어깨", "목걸이", "귀걸이", "귀걸이", "반지", "반지", "어빌리티 스톤", "팔찌", "나침반", "부적"]
+        let count = 0;
+        let ear = false;
+        let ring = false;
+        for (let i = 0; i < equipmentType.length; i++) {
+            let type = data.ArmoryEquipment[count].Type;
+
+            if (type === equipmentType[i]) {
+                if (equipmentType[i] === "어빌리티 스톤") {
+                    document.querySelector(".어빌리티스톤").innerHTML = switchArmoryGrade(data.ArmoryEquipment[count]);
+                } else if (equipmentType[i] === "귀걸이" && !ear) {
+                    document.querySelector(".귀걸이1").innerHTML = switchArmoryGrade(data.ArmoryEquipment[count]);
+                    ear = true;
+                } else if (equipmentType[i] === "귀걸이" && ear) {
+                    document.querySelector(".귀걸이2").innerHTML = switchArmoryGrade(data.ArmoryEquipment[count]);
+                } else if (equipmentType[i] === "반지" && !ring) {
+                    document.querySelector(".반지1").innerHTML = switchArmoryGrade(data.ArmoryEquipment[count]);
+                    ring = true;
+                } else if (equipmentType[i] === "반지" && ring) {
+                    document.querySelector(".반지2").innerHTML = switchArmoryGrade(data.ArmoryEquipment[count]);
+                } else if (equipmentType[i] === "나침반") {
+                    document.querySelector(".나침반").innerHTML = switchArmoryGrade(data.ArmoryEquipment[count]);
+                } else if (equipmentType[i] === "부적") {
+                    document.querySelector(".부적").innerHTML = switchArmoryGrade(data.ArmoryEquipment[count]);
+                } else {
+                    document.querySelector("." + equipmentType[i]).innerHTML = switchArmoryGrade(data.ArmoryEquipment[count]);
+                }
+                if(count < data.ArmoryEquipment.length-1) count++;
+            } else {
+                const noneCode = `<span class="badge mx-3" style="background: gray; color: black">없음</span><svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor" class="border rounded bi bi-x mx-3" viewBox="0 0 16 16">
+                                          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                                      </svg>${equipmentType[i]} 미 착용`;
+                if (equipmentType[i] === "어빌리티 스톤") {
+                    document.querySelector(".어빌리티스톤").innerHTML = noneCode;
+                } else if (equipmentType[i] === "귀걸이" && !ear) {
+                    document.querySelector(".귀걸이1").innerHTML = noneCode;
+                    ear = true;
+                } else if (equipmentType[i] === "귀걸이" && ear) {
+                    document.querySelector(".귀걸이2").innerHTML = noneCode;
+                } else if (equipmentType[i] === "반지" && !ring) {
+                    document.querySelector(".반지1").innerHTML = noneCode;
+                    ring = true;
+                } else if (equipmentType[i] === "반지" && ring) {
+                    document.querySelector(".반지2").innerHTML = noneCode;
+                } else if (equipmentType[i] === "나침반") {
+                    document.querySelector(".나침반").innerHTML += `<p class="ellipsis d-inline-flex align-items-center">`
+                    document.querySelector(".나침반").innerHTML += noneCode;
+                    document.querySelector(".나침반").innerHTML += `</p>`;
+                } else if (equipmentType[i] === "부적") {
+                    document.querySelector(".부적").innerHTML += `<p class="ellipsis d-inline-flex align-items-center">`
+                    document.querySelector(".부적").innerHTML +=  noneCode;
+                    document.querySelector(".부적").innerHTML += `</p>`;
+                } else {
+                    document.querySelector("." + equipmentType[i]).innerHTML = noneCode;
+                }
+            }
+        }
+    }
+    function printGems(data){
+        let gemsStr = '';
+
+        let gemsData = data.ArmoryGem.Gems;
+        if (gemsData !== null) {
+            for (gemsData of data.ArmoryGem.Gems) {
+                gemsStr += `<div class="hover-text">
+                                <img src="${gemsData.Icon}" alt="보석 이미지" class="border rounded my-1" style="width: 50px; height: 50px">
+                                <span class="tooltip-text tooltip-left border border-white" id="fade">${gemsData.Name}</span>
+                            </div>`
+            }
+        } else {
+            gemsStr += `<p>보석 없음</p>`
+        }
+        gemsDiv.innerHTML += gemsStr;
+    }
+
+    function printCharacter(characterName) {
+        getCharacter(characterName).then(data => {
+            printProfile(data);
+            printCharacterStat(data);
+            printPassive(data);
+            printEquipment(data);
+            printGems(data);
+        });
+    }
+
+    printCharacter(characterName);
+
+</script>
+
+</html>

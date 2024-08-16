@@ -1,0 +1,42 @@
+@font-face {
+    font-family: 'kdg_Medium';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts-20-12@1.0/kdg_Medium.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.siteHeader{
+    font-family: "kdg_Medium", serif;
+}
+
+.searchBar{
+    border : 1px solid white;
+    border-radius : 40px;
+}
+
+ /* 페이징 css start */
+ .page-link{
+     color: #fff;
+     background-color: #000;
+     border-color: #444;
+ }
+.disabled>.page-link{
+    color: #fff;
+    background-color: #343a49;
+    border-color: #444;
+}
+
+.page-item.active .page-link{
+    z-index: 1;
+    color: #000;
+    font-weight:bold;
+    background-color: #fff;
+    border-color: #000;
+}
+
+.page-link:focus, .page-link:hover {
+    color: #ccc;
+    background-color: #222;
+    border-color: #444;
+}
+/* 페이징 css end */

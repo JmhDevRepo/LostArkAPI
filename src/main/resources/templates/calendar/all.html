@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/basic.html}">
+<head>
+    <link rel="stylesheet" th:href="@{/css/calendar.css}">
+    <link rel="stylesheet" th:href="@{/css/calendarNavi.css}">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+    <title>LostArkAPI</title>
+</head>
+
+<div layout:fragment="content">
+    <div class="container">
+        <div id="moveTag" class="mt-5 border border-white rounded-3"></div>
+        <div class="calendarDiv"></div>
+    </div>
+
+    <nav class="navi">
+        <div class="naviIcon">
+            <i class="bx bx-menu"></i>
+            <ul class="naviList"></ul>
+        </div>
+    </nav>
+    <nav class="moveUp">
+        <a href="#container"><i class="bx bxs-up-arrow"></i></a>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script th:src="@{/js/library/easytimer.min.js}"></script>
+    <script th:src="@{/js/Calendar.js}"></script>
+</div>
+
+<script layout:fragment="script" th:inline="javascript">
+    // Timer Library 사용
+    function timer(tag, date) {
+        let timer = new easytimer.Timer();
+        let time = (new Date(date) - new Date()) / 1000;
+
+        timer.start({countdown: true, startValues: {seconds: time}});
+
+        timer.addEventListener('secondsUpdated', function (e) {
+            timeStr = timer.getTimeValues().days + "일 ";
+            timeStr += timer.getTimeValues().hours + "시 ";
+            timeStr += timer.getTimeValues().minutes + "분 " ;
+            timeStr += timer.getTimeValues().seconds + "초";
+            tag.innerHTML = timeStr;
+        });
+
+        timer.addEventListener('targetAchieved', function (e) {
+            tag.innerHTML = "등장(새로고침 필요 !)";
+        });
+    }
+    // -----------------------------------------------------------------------------------------------------------------
+    // String Data format ( yyyy-MM-dd ) 설정
+    function StringDataFormat(date){
+        let value = new Date(date);
+
+        let year = value.toLocaleString("en-US", { year: "numeric" });
+        let month = value.toLocaleString("en-US", { month: "2-digit" });
+        let day = value.toLocaleString("en-US", { day: "2-digit" });
+        let time = value.toLocaleTimeString("en-US", { hour12 : false});
+
+        let formattedDate = year + "-" + month + "-" + day + "  " + time;
+
+        return formattedDate;
+    }
+    // -----------------------------------------------------------------------------------------------------------------
+    const calendarDiv = document.querySelector(".calendarDiv");
+    let categoryName = ["로웬", "모험 섬", "섬", "카오스게이트", "태초의 섬", "필드보스", "항해"];
+    getCalendars().then(data => {
+        console.log(data);
+
+        let count = 0;
+        let i = 0;
+
+        let str = `<div class="my-5 bg-black border rounded-3"><div class="mb-5 ps-5 pt-5" id="로웬"><h3>로웬</h3></div><div class="row row-cols-1 row-cols-md-2 g-4 px-5 pb-5">`;
+        for (const o of data) {
+            let nextTime = '';
+
+            if(o.StartTimes === null)
+                nextTime = '다음 정보 없음';
+            else{
+                const now = new Date();
+                for (const time of o.StartTimes) {
+                    if (new Date(time) > now) {
+                        nextTime = StringDataFormat(time);
+                        break;
+                    } else{
+                        nextTime = '다음 정보 없음';
+                    }
+                }
+                if(categoryName[count] !== o.CategoryName && count < categoryName.length){
+                    count++;
+                    str += `</div></div><div class="my-5 bg-black border rounded-3"><div class="mb-5 ps-5 pt-5" id="${categoryName[count]}"><h3>${categoryName[count]}</h3></div><div class="row row-cols-1 row-cols-md-2 g-4 px-5 pb-5">`;
+                }
+                str += `<div class="col">
+                        <div class="bg-dark text-white card mb-3" style="max-width:540px;">
+                            <div class="row g-0">
+                                <div class="col-md-3">
+                                    <img src="${o.ContentsIcon}" width="100%" class="card-img-top" alt="...">
+                                </div>
+                                <div class="col-md-9">
+                                    <div class="card-body">
+                                        <h5 class="card-title contentTitle">${o.ContentsName}</h5>
+                                        <hr class="marginLittle">
+                                        <p class="card-text marginLittle timeCard">${nextTime}</p>
+                                        <div class="timerDiv marginLittle timerContent"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`
+                i++;
+            }
+        }
+        str += `</div></div>`;
+
+        calendarDiv.innerHTML = str;
+
+        getTimer();
+    });
+
+    function getTimer(){
+        const cardArr = document.querySelectorAll(".timeCard");
+        const timerDivArr = document.querySelectorAll(".timerDiv");
+
+        for(let i = 0 ; i < cardArr.length ; i++){
+            timer(timerDivArr[i], cardArr[i].innerHTML);
+        }
+    }
+
+    function showTag(){
+        let tagStr = '<div class="bg-dark rounded-3 d-flex justify-content-between">'
+        let naviStr = ''
+
+        for(const category of categoryName){
+            tagStr += `<span class="btn btn-primary bg-white mx-3 my-3 w-13 border-0"><a href="#${category}" class="text-black text-decoration-none ">${category}</a></span>`
+            naviStr +=`<li class="text-decoration-none text-black" onclick="window.location.href='#${category}'">${category}</li>`
+        }
+
+        tagStr += `</div>`
+        document.querySelector("#moveTag").innerHTML = tagStr;
+        document.querySelector(".naviList").innerHTML = naviStr;
+    }
+    showTag();
+</script>
+
+</html>

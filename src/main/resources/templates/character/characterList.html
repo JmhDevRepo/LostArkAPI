@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/basic.html}">
+<head>
+    <title>LostArkAPI</title>
+</head>
+
+<div layout:fragment="backgroundImage">
+
+</div>
+<div layout:fragment="content">
+    <div class="container">
+        <div class="siteHeader my-3 row">
+            <h1 class="text-center">유 저 검 색</h1>
+        </div>
+        <form>
+            <div class="my-3 row">
+                <nav class="searchBar navbar bg-dark mb-3">
+                    <div class="d-flex w-100 px-2">
+                        <input autofocus id="searchInput" class="form-control flex-grow-1 mx-2" type="search"
+                               placeholder="Search">
+                        <button class="btn btn-secondary searchBtn mx-2 w-25" type="submit">검색
+                        </button>
+                    </div>
+                </nav>
+                <ul class="list-group noticeList"></ul>
+            </div>
+        </form>
+        <div class="characterList row d-flex justify-content-start">
+
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script th:src="@{/js/Character.js}"></script>
+</div>
+
+<script layout:fragment="script" th:inline="javascript">
+
+    let searchInput = document.querySelector("#searchInput");
+    const searchBtn = document.querySelector(".searchBtn");
+    const characterListDiv = document.querySelector('.characterList');
+
+    let characterName = new URL(location.href).pathname.substring(16);
+    searchInput.value = decodeURI(characterName);
+
+
+    function printCharacterList(searchText) {
+
+        let str = '';
+        let serverName = '';
+
+        getCharacterList(searchText).then(data => {
+            if (data === null || data.length === 0) {
+                str = `<div>검색하신 데이터가 없습니다. 시즌3에 사용한 계정의 보유 캐릭터를 검색하여주세요.</div>`
+            } else {
+                console.log(data);
+
+                for (const item of data) {
+
+                    if (serverName !== item.ServerName) {
+                        serverName = item.ServerName;
+                        str += `<hr><h3 class="text-white"><strong>${item.ServerName}</strong></h3>`
+                    }
+
+                    str += `<div type="button" class="btn btn-secondary card bg-dark text-white rounded-4" onclick="window.location.href='/character/${item.CharacterName}'" style="width: 23.5%; margin: 0.5%">
+                                <div class="card-body col d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p style="color: aqua">${item.CharacterClassName}</p>
+                                        <p>${item.CharacterName}</p>
+                                        <p class="d-inline">Lv.${item.CharacterLevel}</p>
+                                        <p class="d-inline" style="color: #ff7f50">${item.ItemAvgLevel}</p>
+                                    </div>
+                                    <div>
+                                        <img src=`
+                    str += iconUrl + classIcon[className.indexOf(item.CharacterClassName)] + "_s.png";
+                    str += ` width="50" alt="직업 사진">
+                                    </div>
+                                </div>
+                            </div>`;
+                }
+                str += `<hr>`;
+            }
+            characterListDiv.innerHTML = str;
+        }).catch(e => {
+            console.log(e)
+        });
+    }
+
+    searchBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (searchInput.value === "") alert("사용자명을 입력하세요.");
+        else printCharacterList(searchInput.value);
+    })
+
+    if (characterName !== "") {
+        printCharacterList(characterName);
+    }
+
+</script>
+
+</html>

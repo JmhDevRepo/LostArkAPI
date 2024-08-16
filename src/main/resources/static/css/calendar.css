@@ -1,0 +1,14 @@
+.contentTitle{
+    color : cornflowerblue;
+    font-weight : bold;
+}
+
+.timerContent{
+    color : coral;
+    font-weight : bold;
+}
+
+.marginLittle{
+    margin-top : 4px;
+    margin-bottom : 4px;
+}

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+    <title>LostArkAPI - Login</title>
+
+
+
+    <!-- Bootstrap 5.3.2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <!-- custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+
+    <!-- Bootstrap 5.3.2 JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"
+            integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
+            crossorigin="anonymous"></script>
+
+</head>
+<body class="align-middle">
+    <div class="container-fluid d-flex justify-content-center login-card">
+        <div class="card align-self-center">
+            <div class="card-header">
+                LOGIN Page
+            </div>
+            <div class="card-body">
+                <th:block th:if="${param.logout != null}">
+                    <h1>Logout........</h1>
+                </th:block>
+
+                <form id="registerForm" action="/auth/login" method="post">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text w-25">ID</span>
+                        <input type="text" name="username" class="form-control" placeholder="USER ID">
+                    </div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text w-25">PW</span>
+                        <input type="text" name="password" class="form-control" placeholder="PASSWORD">
+                    </div>
+                    <div class="input-group mb-3">
+                        <label th:for="autoLogin" class="form-check-label">
+                        <input id="autoLogin" class="form-check-input" type="checkbox" name="remember-me">
+                        자동로그인</label>
+                    </div>
+                    <div class="my-4">
+                        <div class="float-end">
+                            <button type="submit" class="btn btn-primary submitBtn">LOGIN</button>
+                            <button type="button" class="btn btn-secondary joinBtn"
+                                    th:onclick="|window.location='@{/auth/join}'|">JOIN
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div><!--end card body-->
+        </div><!--end card-->
+    </div>
+</body>
+</html>

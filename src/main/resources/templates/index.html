@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/basic.html}">
+<head>
+    <script th:src="@{/js/Notices.js}"></script>
+    <script th:src="@{/js/Events.js}"></script>
+    <script th:src="@{/js/Challenge.js}"></script>
+    <title>LostArkAPI - Main</title>
+</head>
+
+<div layout:fragment="content">
+    <div class="container row my-3 d-flex">
+        <div class="col-2 my-3 w-50">
+            <div class="abyss w-100"></div>
+            <div class="guardian w-100"></div>
+            <div class="notices w-100"></div>
+        </div>
+        <div class="events col-2 my-3 w-50"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</div>
+
+<script layout:fragment="script" th:inline="javascript">
+    const noticesDiv = document.querySelector('.notices')
+    const eventsDiv = document.querySelector('.events');
+    const abyssDiv = document.querySelector('.abyss');
+    const guardianDiv = document.querySelector('.guardian');
+
+    function printNotices() {
+        let str = '';
+        getNotices().then(data => {
+            str += `<ul class="list-group" >`;
+            str += `<li class="d-flex justify-content-between list-group-item list-group-item-secondary">
+                        <sapn class="index_content_header align-center h4">로스트아크 공지사항</sapn>
+                        <a href="/notice" class="align-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" class="bi bi-three-dots text-light" viewBox="0 0 16 16">
+                                <path d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3"/>
+                            </svg>
+                        </a>
+                    </li>`
+            for (let i = 0; i < 10; i++) {
+                str += `<li class="list-group-item list-group-item-action bg-dark ellipsis">`
+                switch (data[i].Type) {
+                    case "공지":
+                        str += `<span class="badge text-bg-primary mx-3">${data[i].Type}</span>`
+                        break;
+                    case "점검":
+                        str += `<span class="badge text-bg-secondary mx-3">${data[i].Type}</span>`
+                        break;
+                    case "상점":
+                        str += `<span class="badge text-bg-warning mx-3">${data[i].Type}</span>`
+                        break;
+                    case "이벤트":
+                        str += `<span class="badge text-bg-success mx-3">${data[i].Type}</span>`
+                        break;
+                }
+                str += `<a href="${data[i].Link}" target="_blank" class="link-offset-2 link-underline link-underline-opacity-0 text-light">${data[i].Title}</a></li>`;
+            }
+            str += `</ul>`;
+            noticesDiv.innerHTML = str;
+        }).catch(e => {
+            console.log(e)
+        });
+    }
+    function printEvents() {
+        let str = '';
+        getEvents().then(data => {
+            str += `<ul class="list-group">`;
+            str += `<li class="list-group-item list-group-item-secondary">
+                        <h4 class="index_content_header">진행중인 이벤트</h4>
+                    </li>`
+            str += `<div class="list-group-item bg-black border border-white d-flex flex-wrap">`
+            for (const item of data) {
+                str += `<div class="card mb-3 col col-4 bg-black">
+                            <a href="${item.Link}" target="_blank"
+                               class="link-offset-2 link-underline link-underline-opacity-0 text-light bg-dark text-light mt-2 mx-1 rounded">
+                                <img src="${item.Thumbnail}" class="card-img-top" alt="eventImage">
+                                <div class="card-body">
+                                    <h5 class="card-title ellipsis">${item.Title}</h5>
+                                    <p class="card-text"><small class="text-body-white">${`${item.StartDate}`.substring(2, 10)} ~ ${`${item.EndDate}`.substring(2, 10)}</small></p>
+                                </div>
+                            </a>
+                        </div>`
+            }
+            str += `</div>`;
+            str += `</ul>`;
+            eventsDiv.innerHTML = str;
+        }).catch(e => {
+            console.log(e)
+        });
+    }
+    function printAbyss(){
+        let str = '';
+        getAbyss().then(data => {
+            str += `<ul class="list-group border border-white  mb-5">`;
+            str += `<li class="list-group-item list-group-item-secondary">
+                        <h4 class="index_content_header">이번 주 어비스</h4>
+                    </li>`
+            str += `<div class="d-flex bg-dark rounded-3">`
+            for(const o of data){
+                str += `<div class="card text-bg-dark col-6">
+                            <img src="${o.Image}" class="card-img p-1" alt="어비스사진">
+                                <div class="card-img-overlay">
+                                    <h5 class="card-title badge text-bg-dark position-absolute start-50 translate-middle bottom-0">${o.Name}</h5>
+                                </div>
+                        </div>`
+            }
+            str += `</div></ul>`
+            abyssDiv.innerHTML = str;
+        }).catch(e => {
+            console.log(e)
+        });
+    }
+    function printGuardian(){
+        let str = '';
+        getGuardian().then(data => {
+            console.log(data);
+            str += `<ul class="list-group border border-white  mb-5">`;
+            str += `<li class="list-group-item list-group-item-secondary">
+                        <h4 class="index_content_header">이번 주 가디언</h4>
+                    </li>`
+            str += `<div class="d-flex bg-dark rounded-3">`
+            for(const o of data.Raids){
+                str += `<div class="card text-bg-dark col-4">
+                            <img src="${o.Image}" class="card-img p-1" alt="어비스사진">
+                                <div class="mx-auto">
+                                    <h5 class="card-title badge text-bg-dark">${o.Name}</h5>
+                                </div>
+                        </div>`
+            }
+            str += `</div></ul>`
+            guardianDiv.innerHTML = str;
+        }).catch(e => {
+            console.log(e)
+        });
+    }
+
+    printAbyss();
+    printGuardian();
+    printEvents();
+    printNotices();
+</script>
+
+</html>

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/basic.html}">
+<head>
+    <link rel="stylesheet" th:href="@{/css/notice.css}">
+    <title>LostArkAPI</title>
+</head>
+
+<div layout:fragment="backgroundImage">
+</div>
+
+<div layout:fragment="content">
+    <div class="content_container container mt-5">
+        <div class="siteHeader my-5">
+            <h1 class="text-center">공 지 사 항</h1>
+        </div>
+        <div class="my-3">
+            <nav class="searchBar navbar bg-dark mb-4">
+                <div class="d-flex w-100 px-2">
+                    <input id="searchInput" class="form-control flex-grow-1 mx-2" type="search" name="searchText"
+                           placeholder="Search">
+                    <select id="searchSelect" class="form-select mx-2 w-25" name="type">
+                        <option value="" selected>구분</option>
+                        <option value="공지">공지</option>
+                        <option value="점검">점검</option>
+                        <option value="이벤트">이벤트</option>
+                        <option value="상점">상점</option>
+                    </select>
+                    <button class="btn btn-secondary searchBtn mx-2 w-25" type="button">검색
+                    </button>
+                </div>
+            </nav>
+            <ul class="list-group noticeList"></ul>
+        </div>
+        <div class="Page navigation example my-3">
+            <ul class="pagination noticePaging justify-content-center"></ul>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script th:src="@{/js/Notices.js}"></script>
+</div>
+
+<script layout:fragment="script" th:inline="javascript">
+    let noticeList = document.querySelector(".noticeList");
+    let noticePaging = document.querySelector(".noticePaging");
+    let searchBtn = document.querySelector(".searchBtn");
+    let searchInput = document.querySelector("#searchInput");
+    let searchSelect = document.querySelector("#searchSelect");
+
+    function printList(data, page) {
+        let str = '';
+        if (data && data.length > 0) {
+            let start = (page - 1) * 10;
+            let end = start + 10;
+            if (end > data.length)
+                end = data.length;
+            for (let i = start; i < end; i++) {
+                str += `<li class="list-group-item list-group-item-action bg-dark replyItem d-flex justify-content-between"><span class="ellipsis w-85">`
+                switch (data[i].Type) {
+                    case "공지":
+                        str += `<span class="badge text-bg-primary mx-3">${data[i].Type}</span>`
+                        break;
+                    case "점검":
+                        str += `<span class="badge text-bg-secondary mx-3">${data[i].Type}</span>`
+                        break;
+                    case "상점":
+                        str += `<span class="badge text-bg-warning mx-3">${data[i].Type}</span>`
+                        break;
+                    case "이벤트":
+                        str += `<span class="badge text-bg-success mx-3">${data[i].Type}</span>`
+                        break;
+                }
+                str += `<a href="${data[i].Link}" target="_blank" class="link-offset-2 link-underline link-underline-opacity-0 text-light">${data[i].Title}</a></span>
+                        <span class="ellipsis w-15 text-center"><a href="${data[i].Link}" target="_blank" class="link-offset-2 link-underline link-underline-opacity-0 text-light">${`${data[i].Date}`.substring(0,10)}</a></span>
+                        </li>`;
+            }
+        }
+        noticeList.innerHTML = str;
+    }
+
+    // 댓글 리스트에 대한 페이징 출력
+    function printPages(count, page) {
+
+        let pageStr = '';
+        let pageCount = (count % 10) > 0 ? (count / 10 + 1) : (count / 10);
+        let end = (Math.ceil(page / 10)) * 10;
+        let start = end - 9;
+        let last = (Math.ceil(count / 10));
+        end = end > last ? last : end;
+        prev = start > 1;
+        next = count > end * 10;
+
+        if (prev) {
+            pageStr += `<li class="page-item"><a class="page-link" data-page="${start - 1}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>`;
+        } else {
+            pageStr += `<li class="page-item disabled"><a class="page-link" data-page="${start - 1}" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>`;
+        }
+
+        for (let i = start; i <= end; i++) {
+            pageStr += `<li class="page-item ${i == page ? "active" : ""}"><a class="page-link" data-page="${i}">${i}</a></li>`;
+        }
+
+        if (next) {
+            pageStr += `<li class="page-item"><a class="page-link" data-page="${end + 1}" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>`;
+        } else {
+            pageStr += `<li class="page-item disabled"><a class="page-link" data-page="${end + 1}" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>`;
+        }
+        noticePaging.innerHTML = pageStr;
+    }
+
+    // 데이터 받아와서 페이지에 맞는 댓글 출력
+    function printNotices(page, searchText, type) {
+        if ((searchText !== undefined && searchText.length > 0) || (type !== undefined && type.length>0)) {
+            getNotices(searchText, type).then(
+                data => {
+                    printList(data, page);
+                    printPages(data.length, page);
+                }
+            ).catch(e => {
+                console.error(e);
+            })
+        } else {
+            getNotices().then(
+                data => {
+                    printList(data, page);
+                    printPages(data.length, page);
+                }
+            ).catch(e => {
+                console.error(e);
+            })
+        }
+    }
+
+    // 페이지 클릭 이벤트
+    noticePaging.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const target = e.target;
+
+        if (!target || target.tagName != 'A') {
+            return;
+        }
+
+        const pageNum = target.getAttribute("data-page");
+
+        printNotices(pageNum, searchInput.value, searchSelect.value);
+    }, false);
+
+    searchBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        let page = 1;
+        printNotices(page, searchInput.value, searchSelect.value);
+    })
+
+    let page = 1;
+
+    printNotices(page);
+
+</script>
+
+</html>

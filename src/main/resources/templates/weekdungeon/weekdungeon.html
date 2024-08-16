@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/basic.html}">
+<head>
+    <link rel="stylesheet" th:href="@{/css/Challenge.css}">
+    <title>LostArkAPI - Week Dungeon</title>
+</head>
+
+<div layout:fragment="content">
+    <div class="container row my-3 d-flex">
+        <div class="col-2 my-3 w-50 abyssDiv"></div>
+        <div class="col-2 my-3 w-50 guardianDiv"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/js/Challenge.js"></script>
+</div>
+
+<script layout:fragment="script" th:inline="javascript">
+    let abyssDiv = document.querySelector(".abyssDiv");
+    let guardianDiv = document.querySelector(".guardianDiv");
+
+    getAbyss().then(data => {
+        let str = '';
+        str += `<ul class="list-group">`;
+        str += `<li class="list-group-item list-group-item-secondary">
+                    <h4 class="index_content_header">어비스</h4>
+                </li>`
+
+        str += `<div class="list-group-item bg-black border border-white d-flex flex-wrap">`
+
+        for (const o of data) {
+            str += `<div class="card mb-3 col mx-1 bg-black">
+                        <img src="${o.Image}" class="card-img-top" alt="eventImage">
+                        <div class="card-body">
+                            <h5 class="card-title ellipsis">${o.Name}</h5>
+                            <p class="card-text"><small class="text-white">~ ${o.EndTime}</small></p>
+                        </div>
+                    </div>`
+        }
+        str += `</div>`;
+        str += `</ul>`;
+
+        for (const o of data) {
+            str += `<ul class="list-group mt-3">
+                    <li class="list-group-item list-group-item-secondary">
+                        <h4 class="index_content_header">${o.Name}</h4>
+                    </li>
+                    <li class="list-group-item bg-black border border-white d-flex flex-wrap">
+                        <div class="card col-6 mb-3 bg-black">
+                            <img src="${o.Image}" class="card-img-top" alt="eventImage">
+                            <div class="card-body">
+                                <h5 class="card-title ellipsis">< 개방 시간 ></h5>
+                                <p class="card-text"><small class="text-white">${o.StartTime} ~ ${o.EndTime}</small></p>
+                                <h5 class="card-title ellipsis">< 최소 레벨 ></h5>
+                                <p class="card-text mb-1"><small class="text-white"> - 전투 : ${o.MinCharacterLevel}</small></p>
+                                <p class="card-text mb-1"><small class="text-white"> - 아이템 :  ${o.MinItemLevel}</small></p>
+                            </div>
+                        </div>
+                        <div class="card col-6 mb-3 bg-black d-flex">`
+            for (const reward of o.RewardItems){
+            str += `<div class="ms-2 mt-2 d-flex"><img class="image-fluid" src="${reward.Icon}" width="15%" alt="보상아이템사진">`
+            str += switchType(reward.Grade);
+            str += `<p class="my-auto"><small class="text-white">${reward.Name}</small></p></div>`
+            }
+            str += `</div>
+                </li>
+            </ul>`
+        }
+        abyssDiv.innerHTML = str;
+    });
+
+    getGuardian().then(data => {
+        let guardianData = data;
+        console.log(guardianData);
+        let str = '';
+        str += `<ul class="list-group">`;
+        str += `<li class="list-group-item list-group-item-secondary">
+                    <h4 class="index_content_header">레이드</h4>
+                </li>`
+
+        str += `<div class="list-group-item bg-black border border-white d-flex flex-wrap">`
+
+        for (const o of data.Raids) {
+            str += `<div class="card mb-3 col mx-1 bg-black">
+                        <img src="${o.Image}" class="card-img-top" alt="eventImage">
+                        <div class="card-body">
+                            <h5 class="card-title ellipsis">${o.Name}</h5>
+                            <p class="card-text"><small class="text-white">~ ${o.EndTime}</small></p>
+                        </div>
+                    </div>`
+        }
+        str += `</div>`;
+        str += `</ul>`;
+        str += `<ul class="mt-3 list-group border border-white">
+                <li class="list-group-item list-group-item-secondary">
+                    <h4 class="index_content_header">레이드 레벨별 보상</h4>
+                </li>
+                <div class="bg-dark accordion accordion-flush" id="accordionFlushExample">
+`
+        for (const o of data.RewardItems) {
+            str += `
+                    <div class="accordion-item mt-1">
+                        <h2 class="accordion-header bg-dark">
+                            <button class="accordion-button collapsed bg-dark text-white" type="button" data-bs-toggle="collapse" data-bs-target="#a${o.ItemLevel}" aria-expanded="false" aria-controls="a${o.ItemLevel}">
+                                Item Level : ${o.ItemLevel}
+                            </button>
+                        </h2>
+                        <div id="a${o.ItemLevel}" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                            <div class="accordion-body bg-dark">`
+            for(const r of o.Items) {
+                str += `<div class="ms-2 mt-2 d-flex"><img class="image-fluid" src="${r.Icon}" width="6%" alt="보상아이템사진">`
+                str += switchType(r.Grade);
+                str += `<p class="my-auto"><small class="text-white">${r.Name}</small></p></div>`
+            }
+            str +=          `</div>
+                        </div>
+                    </div>
+                    `
+        }
+        str += `</div></ul>`
+
+        guardianDiv.innerHTML = str;
+
+    })
+
+    function switchType(type) {
+
+        switch (type) {
+            case "고대":
+                return `<span class="badge d-inline mx-3 my-auto" style="background: beige; color: black">${type}</span>`
+            case "유물":
+                return `<span class="badge d-inline mx-3 my-auto" style="background: darkorange; color: white">${type}</span>`
+            case "전설":
+                return `<span class="badge d-inline mx-3 my-auto" style="background: #ffff7c; color: black">${type}</span>`
+            case "영웅":
+                return `<span class="badge d-inline mx-3 my-auto" style="background: rebeccapurple; color: white">${type}</span>`
+            case "희귀":
+                return `<span class="badge d-inline mx-3 my-auto" style="background: deepskyblue; color: black">${type}</span>`
+            case "일반":
+                return `<span class="badge d-inline mx-3 my-auto" style="background: gray; color: white">${type}</span>`
+        }
+    }
+</script>
+
+</html>
